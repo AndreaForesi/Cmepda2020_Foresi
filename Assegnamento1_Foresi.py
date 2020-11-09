@@ -22,63 +22,92 @@ import logging
 import time
 import string
 import matplotlib.pyplot as plt
+#import re
 
 """ Read and analysis the file input_file and print charachter"""
 
-def process (input_file, lower=True, upper=False, histo=False):
+def process (FilePath, LetterType, histo=False):
 
-    start_time = time.time()
+    StartTime = time.time()
 
-    logging.info("Reading the file %s..\n", input_file)
+    logging.info("Reading the file %s..\n", FilePath)
 
-    with open(input_file) as file:
-
-        text = file.read() #pratica ridefinizione
+    with open(FilePath) as InputFile:
+        text = InputFile.read()
 
             #Ricerca lettere
-        if lower:
-            logging.info("Ricerca lettere minuscole..")
+        if LetterType=='lower':
+            logging.info("Ricerca delle lettere minuscole..")
             Char_enum = {ch: 0 for ch in string.ascii_lowercase}
-            for ch in text:
-                if ch in Char_enum:
-                    Char_enum[ch] += 1
-            TotLetter=sum(Char_enum.values())
-            for ch,num in Char_enum.items():
-                print(f"The number of '{ch}' in text {input_file} is {num} and is the {(num / TotLetter *100 ):.2f}%\n")
-            print(f"\nLettere minuscole totali {TotLetter}")
+            LetterType = 'minuscole'
 
-        if upper:
-            logging.info("Ricerca lettere maiuscole..")
+        if LetterType=='upper':
+            logging.info("Ricerca delle lettere maiuscole..")
             Char_enum = {ch: 0 for ch in string.ascii_uppercase}
-            for ch in text:
-                if ch in Char_enum:
-                    Char_enum[ch] += 1
-            TotLetter=sum(Char_enum.values())
-            for ch,num in Char_enum.items():
-                print(f"The number of '{ch}' in text {input_file} is {num} and is the {(num / TotLetter *100 ):.2f}%\n")
-            print(f"\nLettere maiuscole totali {TotLetter}")
+            LetterType='maiuscole'
 
-        #if histo:
+        if LetterType=='every':
+            logging.info("Ricerca di tutte le lettere")
+            Char_enum = {ch: 0 for ch in string.ascii_letters}
+            LetterType='maiuscole e minuscole'
 
+            #Counting
+        logging.info('Counting letter...')
+        Char_enum = Counter(FilePath , text , Char_enum , LetterType)
+        FinalTime=time.time()
+
+            #Making histogram
+        if histo:
+            logging.info('Making histogram...')
+            plt.bar((Char_enum.keys()),(Char_enum.values()))
+            plt.xlabel('Letters')
+            plt.ylabel('Letters frequencies [%]')
+            plt.title(f'Frequencies of letters of {FilePath}')
+            FinalTime=time.time()
+            plt.show()
 
             #time
-        elapsed_time = -start_time + time.time()
-        print(f"\nDone in {elapsed_time:.3f} \n")
+        elapsed_time = FinalTime - StartTime
+        print(f"\nDone in {elapsed_time:.3f} s \n")
+
+
+""" Counting the letter and return its percentual as value of every key
+    The total return is used to statistics (probably)
+"""
+def Counter (path, file , dict , LT):
+    #Inserire if con inizio fine
+    for ch in file:#inserire le statistiche
+        if ch in dict:
+            dict[ch] += 1
+    Tot=sum(dict.values())
+    for ch,num in dict.items():
+        #trasormazione in percentuale
+        num=num/Tot*100
+        #output
+        print(f"There's {num:.3f}% of {ch} in {path}")
+    print(f"\nLettere {LT} totali {Tot}")
+    return dict
 
 
 if __name__=='__main__':
           #inizializzazione analizzatore
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(usage='Letter Counter of a text',)
         #Aggiunte argomenti al parser
     parser.add_argument('infile', type = str , help = 'path to input file')
+    parser.add_argument('LetterType', type = str , choices = ['lower' , 'upper' , 'every'] , help = 'select upper, lower or every type of letter you want to count')
+        #inserisco sia per info che per debug perché usando l'opzione debug stmapo anche i debugger di matplotlib
+    parser.add_argument('-info', action='store_true' , help='Print info messages')
     parser.add_argument('-debug', action='store_true' , help='Print debugger messages')
-    parser.add_argument('-lower', action='store_false' , help = 'search the lowercase letters')
-    parser.add_argument('-upper', action='store_true' , help = 'search the uppercase letters')
-    parser.add_argument('-histo', action='store_true' , help = 'Show a digram of letter percentage' )
+
+        #differenze tra singola o doppia lineetta?
+    #parser.add_argument('--part', default='False' , action='store_true', help='you cuold select only a part,section, paragraph of you text')
+    parser.add_argument('--histo', action='store_true' , help = 'Show a digram of letter percentage' )
         #analizza il parser e assegna i campi ad args
     args = parser.parse_args()
 
-    if args.debug: #questo argmento non va dato alla funzione process
-        logging.basicConfig(level=logging.DEBUG)
+    if args.info: #questo argmento non va dato alla funzione process
+        logging.basicConfig(level=logging.info)
+    if args.debug:
+        logging.basicConfig(level=logging.debug)
 
-    process(args.infile, args.lower, args.upper, args.histo)
+    process(args.infile, args.LetterType, args.histo)
