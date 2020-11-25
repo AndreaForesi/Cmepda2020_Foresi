@@ -170,7 +170,7 @@ def Counter (path , dict , LT, part):
 
 if __name__=='__main__':
           #inizializzazione analizzatore
-    parser = argparse.ArgumentParser(usage='Letter Counter of a text',)
+    parser = argparse.ArgumentParser(usage='Letter Counter of a text')
         #Aggiunte argomenti al parser
     parser.add_argument('infile', type = str , help = 'path to input file')
     parser.add_argument('LetterType', type = str , choices = ['lower' , 'upper' , 'every' , 'stats'] , help = 'select an option to have statistics about lower (lower) or upper (upper) case letters, every letters with (stats) or without (every) charachters')
