@@ -4,20 +4,11 @@ Assignment #2 (October 12, 2020)
 
 --- Goal
 Write a class to handle a sequence of voltage measurements at different times.
-
---- Specifications
-- the print() function must work on class instance. The output must show one
-  entry (time and voltage), as well as the entry index, per line.
-- the class must have a plot() method that plots data using matplotlib.
-  The plot function must accept 'ax' argument, so that the user can select
-  the axes where the plot is added (with a new figure as default). The user
-  must also be able to pass other plot options as usual.
 """
-
 
 import numpy
 from matplotlib import pyplot as plt
-
+from scipy import interpolate   #importo solo la funzione che mi interessa
 
 class VoltageData:
     """Class for handling a set of measurements of the voltage at different
@@ -109,6 +100,53 @@ class VoltageData:
     def __iter__(self):
         return iter(self._data)     #abbiamo utilizzato la funzione built-in iter di numpy
 
+    """- the print() function must work on class instance. The output must show one
+         entry (time and voltage), as well as the entry index, per line.
+    """
+
+    #print stampa stringhe quindi necesita di alcune di queste se non gliele inviamo allora lui cerca
+    #di chiamare str crcando il metodo sepciale con gli underscore __str__. se non lo trovasse lui cerca repr e quindi__repr__
+    #repr è pensato per il debug più completa rispetto a str
+
+    def __str__(self):      # str non stampa niente ma deve sistemare la stringa da restituire, ricordiamoci che è già iterbile
+        """ Print values row-by-row""" #quando chiedo l'help di un metodo python mi riport il docstring
+        row_fmt = '{:d}) {:.1f} {:.2f}'
+        output_string = [row_fmt.format(i,entry[0],entry[1]) \
+                         for i,entry in enumerate(self)]  #lista di stringhe
+        #for i,entry in enumerate(self):        #per ogni indice si deve stampare t e v si usa enumerate
+        #    output_string.append()
+        #mettiamo insieme le righe, si usa join che è un metodo di una stringa
+        #s='a'; s_list=['1','2','3','4'];s.join(s_list)->1a2a3a4
+        return '\n'.join(output_string)         #differenza rappresentazione stringa
+
+        """Riduciamo il loop con una list comprehensione"""
+
+    """- the class must have a plot() method that plots data using matplotlib.
+         The plot function must accept 'ax' argument, so that the user can select
+         the axes where the plot is added (with a new figure as default). The user
+         must also be able to pass other plot options as usual.
+         """
+    def plot(self, ax=None, fmt='bo--', **kwargs):      #gli devo passare la riga di formato che miaccetta di default anche plot di matplotlib
+        """Plot the data using matplotlib.pyplot"""     #e devo permettere di far inserire anche le altre opzioni e inserisco **kwargs=numero arbitrario di opzioni o azioni
+        if ax is not None:                              #is controlla l'identià cioè lo stesso oggetto == se hanno lo stesso valore
+            plt.sca(ax)                                 #sca=setcurrentaxes
+        else:
+            plt.figure('Voltages vs Times')
+        plt.plot(self.timestamps, self.voltages, fmt , **kwargs) # l'utente può chiamare plot proprio come plt.plot ma con delle specifiche che gli passo io
+        plt.xlabel('Time [s]')
+        plt.ylabel('Voltage [mV]')
+        plt.grid(True)
+        return plt.gca()                        #gca=get_current_axes
+        #rimanere flessibili al di fuori di quello che dobbiamo fare esattamente con il nostro codice
+
+    def __call__(self, t):       #definiamo call nel quale interpoliamo usando scypi
+        """return the voltage value interpolate at time t"""
+        #definiamouna spline che passa per i punti e poi la chiamiamo per fare l'interpolazione
+        spl = interpolate.InterpolatedUnivariateSpline(self.timestamps,self.voltages)
+        #potremmo nche definirla nel costruttore come self.spline()
+        return spl(t)               #l'argomento k è il grado dell'interpolazione
+
+
 if __name__ == '__main__':
     """ Here we test the functionalities of our class. These are not proper
     UnitTest - which you will se in a future lesson."""
@@ -135,9 +173,13 @@ if __name__ == '__main__':
         assert entry[1] == v[i]
     # Test printing
     print(v_data)
+    print('\n', v_data(0.65))
+    #avendo definito call posso richiamare v_data come funzioni
     # Test plotting
-    v_data.plot(fmt='ko', markersize=5, label='normal voltage')
-    x_grid = numpy.linspace(min(t), max(t), 200)
-    plt.plot(x_grid, v_data(x_grid), 'r-', label='spline')
+    #plt.figure('my_figure')
+    #plt.plot(t , 2*v , 'r^',markersize=5, label='double voltage')
+    v_data.plot(ax=plt.gca(), fmt='ko' , markersize=5, label='normal voltage' )           #qua posso passare ulteriori opzioni alla funzione plot(sono gli argument di argparse)
+    xx=numpy.linspace(min(t),max(t), 200)
+    plt.plot(xx, v_data(xx), 'r-', label='spline')
     plt.legend()
     plt.show()
