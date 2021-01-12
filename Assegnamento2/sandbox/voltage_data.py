@@ -1,7 +1,5 @@
 """Module: basic Python
 Assignment #2 (October 12, 2020)
-
-
 --- Goal
 Write a class to handle a sequence of voltage measurements at different times.
 """
@@ -25,7 +23,7 @@ class VoltageData:
         #creo i due iterabili
         t = numpy.array(times, dtype=numpy.float64)      #attenzione all'ordine degliargomenti
         v = numpy.array(voltages, dtype=numpy.float64)    #dtype indica il tipo delle variabili
-        #ok però questi due array dovranno essere atributi
+        #ok però questi due array dovranno essere attributi
         """- the class must expose two attributes: 'times' and 'voltages', each returning
           a numpy array of type numpy.float64 of the corresponding quantity.
           perciò al posto delle righe sopra devo farli essere degli attributi della classe VoltageData
@@ -49,7 +47,7 @@ class VoltageData:
     def voltages(self):
         return self._data[:,1]
 
-    """Se definissi il @voltages.setter a quel punto vuol dire che p possibile cambiare quell'argomento
+    """Se definissi il @voltages.setter a quel punto vuol dire che è possibile cambiare quell'argomento
     @voltages.setter
     def voltages(self, new_values):
         self.data = numpy.column_stack([self.timestamps, newvalues])
@@ -78,16 +76,16 @@ class VoltageData:
 
     """- the values should be accessible with the familiar square parenthesis syntax:
         the first index must refer to the entry, the second selects time (0) or
-        voltage (1). Slicing must als work. il file deve accettare la forma con le [],
+        voltage (1). Slicing must also work. il file deve accettare la forma con le [],
         ovvero una matrice 2d, con la prima colonna avrò times, con la seconda voltages.
         """
-        #modifico il costruttore aggiungendo un pezzetto self._data co l'underscore vuol dire che è privato
+        #modifico il costruttore aggiungendo un pezzetto self._data con l'underscore vuol dire che è privato
         #adesso serve un metodo spciale ben preciso: __getitem__
 
     def __getitem__(self, index):       #l'indice può esere qualsiasi cosa copia slice
         """Random access"""         #si chiama random access per motivi storici, ma è inutile
         return self._data[index]
-        #adesso dovrebbe funzionare l'assert che selezion degli elementi ben precisi tramite parentesi qudre
+        #adesso dovrebbe funzionare l'assert che seleziona degli elementi ben precisi tramite parentesi quadre
 
     """- the class must be iterable: at each iteration, a numpy array of two
         values (time and voltage) corresponding to an entry in the file must be
